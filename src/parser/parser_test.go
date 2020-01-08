@@ -123,3 +123,19 @@ func TestItParsesIdentifiers(t *testing.T) {
 		t.Error("Expect '_1'")
 	}
 }
+
+func TestItSkipsWhitespace(t *testing.T) {
+	p := NewParser("   true   false   ")
+
+	if token := p.NextToken(); token.tokenType != True {
+		t.Error(token)
+	}
+
+	if token := p.NextToken(); token.tokenType != False {
+		t.Error(token)
+	}
+
+	if token := p.NextToken(); token.tokenType != Eof {
+		t.Error(token)
+	}
+}

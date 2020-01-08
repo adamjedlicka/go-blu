@@ -120,6 +120,22 @@ func (p *Parser) GetTokens() []Token {
 	return tokens
 }
 
+func (p *Parser) Previous() Token {
+	return p.previous
+}
+
+func (p *Parser) SetPrevious(previous Token) {
+	p.previous = previous
+}
+
+func (p *Parser) Current() Token {
+	return p.current
+}
+
+func (p *Parser) SetCurrent(token Token) {
+	p.current = token
+}
+
 func (p *Parser) number() Token {
 	for isDigit(p.peek()) {
 		p.advance()

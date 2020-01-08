@@ -14,15 +14,15 @@ func NewToken(tokenType TokenType, lexeme string, line int) Token {
 	}
 }
 
-func (t Token) GetType() TokenType {
+func (t Token) Type() TokenType {
 	return t.tokenType
 }
 
-func (t Token) GetLexeme() string {
+func (t Token) Lexeme() string {
 	return t.lexeme
 }
 
-func (t Token) GetLine() int {
+func (t Token) Line() int {
 	return t.line
 }
 
