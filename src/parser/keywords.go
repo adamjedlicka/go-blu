@@ -10,7 +10,7 @@ var keywords = map[string]TokenType{
 	"false":   False,
 	"fn":      Fn,
 	"for":     For,
-	"Foreign": Foreign,
+	"foreign": Foreign,
 	"import":  Import,
 	"nil":     Nil,
 	"or":      Or,
