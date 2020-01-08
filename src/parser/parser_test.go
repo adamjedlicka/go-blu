@@ -5,7 +5,7 @@ import (
 )
 
 func TestItParsesBasicTokens(t *testing.T) {
-	p := MakeParser("+()>>=<")
+	p := NewParser("+()>>=<")
 
 	if p.NextToken().tokenType != Plus {
 		t.Error("Expect 'Plus'")
@@ -37,7 +37,7 @@ func TestItParsesBasicTokens(t *testing.T) {
 }
 
 func TestItParsesNumbers(t *testing.T) {
-	p := MakeParser("1 10 1.1 999.83")
+	p := NewParser("1 10 1.1 999.83")
 
 	if p.NextToken().lexeme != "1" {
 		t.Error("Expect '1'")
@@ -57,7 +57,7 @@ func TestItParsesNumbers(t *testing.T) {
 }
 
 func TestItParsesStrings(t *testing.T) {
-	p := MakeParser("\"Hello, World!\" \"WHAT\" \"\"")
+	p := NewParser("\"Hello, World!\" \"WHAT\" \"\"")
 
 	if p.NextToken().lexeme != "\"Hello, World!\"" {
 		t.Error("Expect '\"Hello, World!\"'")
@@ -73,7 +73,7 @@ func TestItParsesStrings(t *testing.T) {
 }
 
 func TestItParsesKeywords(t *testing.T) {
-	p := MakeParser("and or class fn for while")
+	p := NewParser("and or class fn for while")
 
 	if p.NextToken().tokenType != And {
 		t.Error("Expect 'And'")
@@ -101,7 +101,7 @@ func TestItParsesKeywords(t *testing.T) {
 }
 
 func TestItParsesIdentifiers(t *testing.T) {
-	p := MakeParser("Class myClass WHAT _leading _1")
+	p := NewParser("Class myClass WHAT _leading _1")
 
 	if p.NextToken().tokenType != Identifier {
 		t.Error("Expect 'Identifier'")

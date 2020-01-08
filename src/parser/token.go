@@ -6,7 +6,7 @@ type Token struct {
 	line      int
 }
 
-func MakeToken(tokenType TokenType, lexeme string, line int) Token {
+func NewToken(tokenType TokenType, lexeme string, line int) Token {
 	return Token{
 		tokenType: tokenType,
 		lexeme:    lexeme,

@@ -11,7 +11,7 @@ type Parser struct {
 	current  Token
 }
 
-func MakeParser(source string) Parser {
+func NewParser(source string) Parser {
 	return Parser{
 		source:   source,
 		from:     0,
@@ -172,11 +172,11 @@ func (p *Parser) identifier() Token {
 func (p *Parser) makeToken(tokenType TokenType) Token {
 	switch tokenType {
 	case Newline:
-		return MakeToken(tokenType, "<Newline>", p.lineFrom)
+		return NewToken(tokenType, "<Newline>", p.lineFrom)
 	case Eof:
-		return MakeToken(tokenType, "<Eof>", p.lineFrom)
+		return NewToken(tokenType, "<Eof>", p.lineFrom)
 	default:
-		return MakeToken(tokenType, p.source[p.from:p.at], p.lineFrom)
+		return NewToken(tokenType, p.source[p.from:p.at], p.lineFrom)
 	}
 }
 
@@ -191,7 +191,7 @@ func (p *Parser) newline() Token {
 }
 
 func (p *Parser) error(message string) Token {
-	return MakeToken(Error, message, p.lineFrom)
+	return NewToken(Error, message, p.lineFrom)
 }
 
 func (p *Parser) advance() rune {
