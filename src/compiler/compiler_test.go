@@ -66,3 +66,20 @@ func TestItCompilesNumbers(t *testing.T) {
 		t.Error(chunk.constants[1])
 	}
 }
+
+func TestItCompilesBinaryOperators(t *testing.T) {
+	compiler := NewCompiler("1 + 2")
+	chunk := compiler.Compile()
+
+	if chunk.code[6] != uint8(Add) {
+		t.Error(chunk.code[6])
+	}
+
+	if chunk.constants[0].(value.Number) != 1 {
+		t.Error(chunk.constants[0])
+	}
+
+	if chunk.constants[1].(value.Number) != 2 {
+		t.Error(chunk.constants[1])
+	}
+}

@@ -10,6 +10,8 @@ type ParseRule struct {
 	precedence Precedence
 }
 
+type ParseRules = []ParseRule
+
 const (
 	PrecedenceNone       Precedence = iota
 	PrecedenceAssignment            // =
@@ -25,58 +27,62 @@ const (
 	PrecedencePrimary
 )
 
-var parseRules = []ParseRule{
-	{nil, nil, PrecedenceNone}, // At
-	{nil, nil, PrecedenceNone}, // Caret
-	{nil, nil, PrecedenceNone}, // Colon
-	{nil, nil, PrecedenceNone}, // Comma
-	{nil, nil, PrecedenceNone}, // Dot
-	{nil, nil, PrecedenceNone}, // LeftBrace
-	{nil, nil, PrecedenceNone}, // LeftBracket
-	{nil, nil, PrecedenceNone}, // LeftParent
-	{nil, nil, PrecedenceNone}, // Minus
-	{nil, nil, PrecedenceNone}, // Percent
-	{nil, nil, PrecedenceNone}, // Plus
-	{nil, nil, PrecedenceNone}, // RightBrace
-	{nil, nil, PrecedenceNone}, // RightBracket
-	{nil, nil, PrecedenceNone}, // RightParen
-	{nil, nil, PrecedenceNone}, // Semicolon
-	{nil, nil, PrecedenceNone}, // Slash
-	{nil, nil, PrecedenceNone}, // Start
+var parseRules ParseRules
 
-	{nil, nil, PrecedenceNone}, // Bang
-	{nil, nil, PrecedenceNone}, // BangEqual
-	{nil, nil, PrecedenceNone}, // Equal
-	{nil, nil, PrecedenceNone}, // EqualEqual
-	{nil, nil, PrecedenceNone}, // Greater
-	{nil, nil, PrecedenceNone}, // GreaterEqual
-	{nil, nil, PrecedenceNone}, // Less
-	{nil, nil, PrecedenceNone}, // LessEqual
+func init() {
+	parseRules = ParseRules{
+		{nil, nil, PrecedenceNone},                // At
+		{nil, nil, PrecedenceNone},                // Caret
+		{nil, nil, PrecedenceNone},                // Colon
+		{nil, nil, PrecedenceNone},                // Comma
+		{nil, nil, PrecedenceNone},                // Dot
+		{nil, nil, PrecedenceNone},                // LeftBrace
+		{nil, nil, PrecedenceNone},                // LeftBracket
+		{nil, nil, PrecedenceNone},                // LeftParent
+		{nil, nil, PrecedenceNone},                // Minus
+		{nil, nil, PrecedenceNone},                // Percent
+		{nil, (*Compiler).binary, PrecedenceTerm}, // Plus
+		{nil, nil, PrecedenceNone},                // RightBrace
+		{nil, nil, PrecedenceNone},                // RightBracket
+		{nil, nil, PrecedenceNone},                // RightParen
+		{nil, nil, PrecedenceNone},                // Semicolon
+		{nil, nil, PrecedenceNone},                // Slash
+		{nil, nil, PrecedenceNone},                // Start
 
-	{nil, nil, PrecedenceNone},                // Identifier
-	{(*Compiler).number, nil, PrecedenceNone}, // Number
-	{nil, nil, PrecedenceNone},                // String
+		{nil, nil, PrecedenceNone}, // Bang
+		{nil, nil, PrecedenceNone}, // BangEqual
+		{nil, nil, PrecedenceNone}, // Equal
+		{nil, nil, PrecedenceNone}, // EqualEqual
+		{nil, nil, PrecedenceNone}, // Greater
+		{nil, nil, PrecedenceNone}, // GreaterEqual
+		{nil, nil, PrecedenceNone}, // Less
+		{nil, nil, PrecedenceNone}, // LessEqual
 
-	{nil, nil, PrecedenceNone},                 // And
-	{nil, nil, PrecedenceNone},                 // Assert
-	{nil, nil, PrecedenceNone},                 // Break
-	{nil, nil, PrecedenceNone},                 // Class
-	{nil, nil, PrecedenceNone},                 // Echo
-	{nil, nil, PrecedenceNone},                 // Else
-	{(*Compiler).literal, nil, PrecedenceNone}, // False
-	{nil, nil, PrecedenceNone},                 // Fn
-	{nil, nil, PrecedenceNone},                 // For
-	{nil, nil, PrecedenceNone},                 // Foreign
-	{nil, nil, PrecedenceNone},                 // Import
-	{(*Compiler).literal, nil, PrecedenceNone}, // Nil
-	{nil, nil, PrecedenceNone},                 // Or
-	{nil, nil, PrecedenceNone},                 // Return
-	{(*Compiler).literal, nil, PrecedenceNone}, // True
-	{nil, nil, PrecedenceNone},                 // Var
-	{nil, nil, PrecedenceNone},                 // While
+		{nil, nil, PrecedenceNone},                // Identifier
+		{(*Compiler).number, nil, PrecedenceNone}, // Number
+		{nil, nil, PrecedenceNone},                // String
 
-	{nil, nil, PrecedenceNone}, // Eof
-	{nil, nil, PrecedenceNone}, // Newline
+		{nil, nil, PrecedenceNone},                 // And
+		{nil, nil, PrecedenceNone},                 // Assert
+		{nil, nil, PrecedenceNone},                 // Break
+		{nil, nil, PrecedenceNone},                 // Class
+		{nil, nil, PrecedenceNone},                 // Echo
+		{nil, nil, PrecedenceNone},                 // Else
+		{(*Compiler).literal, nil, PrecedenceNone}, // False
+		{nil, nil, PrecedenceNone},                 // Fn
+		{nil, nil, PrecedenceNone},                 // For
+		{nil, nil, PrecedenceNone},                 // Foreign
+		{nil, nil, PrecedenceNone},                 // Import
+		{(*Compiler).literal, nil, PrecedenceNone}, // Nil
+		{nil, nil, PrecedenceNone},                 // Or
+		{nil, nil, PrecedenceNone},                 // Return
+		{(*Compiler).literal, nil, PrecedenceNone}, // True
+		{nil, nil, PrecedenceNone},                 // Var
+		{nil, nil, PrecedenceNone},                 // While
 
-	{nil, nil, PrecedenceNone}, // Error
+		{nil, nil, PrecedenceNone}, // Eof
+		{nil, nil, PrecedenceNone}, // Newline
+
+		{nil, nil, PrecedenceNone}, // Error
+	}
 }

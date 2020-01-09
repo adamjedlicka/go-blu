@@ -9,5 +9,8 @@ const (
 	Nil
 
 	Pop
-	Push
+
+	Add
+
+	Return
 )

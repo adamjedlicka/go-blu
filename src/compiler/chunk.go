@@ -16,6 +16,14 @@ func NewChunk() Chunk {
 	}
 }
 
+func (c *Chunk) Code() []uint8 {
+	return c.code
+}
+
+func (c *Chunk) Constants() []value.Value {
+	return c.constants
+}
+
 func (c *Chunk) pushCode(code uint8) {
 	c.code = append(c.code, code)
 }

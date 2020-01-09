@@ -39,11 +39,30 @@ func (c *Compiler) declaration() {
 }
 
 func (c *Compiler) statement() {
-	c.expressionStatement()
+	if c.match(parser.Return) {
+		c.returnStatement()
+	} else {
+		c.expressionStatement()
+	}
 }
 
 func (c *Compiler) expression() {
 	c.parsePrecedence(PrecedenceAssignment)
+}
+
+func (c *Compiler) returnStatement() {
+	if c.match(parser.Newline) {
+		c.emitReturn()
+	} else {
+		needsNewline := !c.check(parser.Fn)
+
+		c.expression()
+		c.emitOpCode(Return)
+
+		if needsNewline {
+			c.expectNewlineOrSemicolon()
+		}
+	}
 }
 
 func (c *Compiler) expressionStatement() {
@@ -81,6 +100,19 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 
 		// Parse the expression so compiler prints propper error messages.
 		c.expression()
+	}
+}
+
+func (c *Compiler) binary(canAssign bool) {
+	operatorType := c.p.Previous().Type()
+
+	rule := parseRules[operatorType]
+
+	c.parsePrecedence(rule.precedence + 1)
+
+	switch operatorType {
+	case parser.Plus:
+		c.emitOpCode(Add)
 	}
 }
 
@@ -124,6 +156,11 @@ func (c *Compiler) emitConstant(value value.Value) {
 
 	c.emitOpCode(Constant)
 	c.emitShort(constant)
+}
+
+func (c *Compiler) emitReturn() {
+	c.emitOpCode(Nil)
+	c.emitOpCode(Return)
 }
 
 func (c *Compiler) consumeNewlines() {
