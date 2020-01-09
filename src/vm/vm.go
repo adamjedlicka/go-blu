@@ -3,6 +3,7 @@ package vm
 import (
 	"github.com/adamjedlicka/go-blue/src/compiler"
 	"github.com/adamjedlicka/go-blue/src/value"
+	"math"
 )
 
 type VM struct {
@@ -38,28 +39,94 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			offset := vm.readShort()
 			constant := vm.chunk.Constants()[offset]
 
-			vm.stack.Push(constant)
+			vm.Push(constant)
 
 		case compiler.False:
-			vm.stack.Push(value.Boolean(false))
+			vm.Push(value.Boolean(false))
 
 		case compiler.True:
-			vm.stack.Push(value.Boolean(true))
+			vm.Push(value.Boolean(true))
 
 		case compiler.Nil:
-			vm.stack.Push(value.Nil{})
+			vm.Push(value.Nil{})
 
 		case compiler.Pop:
-			vm.stack.Pop()
+			vm.Pop()
+
+		case compiler.Equal:
+			left := vm.Pop()
+			right := vm.Pop()
+
+			vm.Push(value.Boolean(left == right))
+
+		case compiler.Greater:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Boolean(left > right))
+
+		case compiler.GreaterEqual:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Boolean(left >= right))
+
+		case compiler.Less:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Boolean(left < right))
+
+		case compiler.LessEqual:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Boolean(left <= right))
+
+		case compiler.NotEqual:
+			right := vm.Pop()
+			left := vm.Pop()
+
+			vm.Push(value.Boolean(left != right))
 
 		case compiler.Add:
-			left := vm.stack.Pop().(value.Number)
-			right := vm.stack.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+			right := vm.Pop().(value.Number)
 
-			vm.stack.Push(left + right)
+			vm.Push(left + right)
+
+		case compiler.Divide:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(left / right)
+
+		case compiler.Exponentiate:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Number(math.Pow(float64(left), float64(right))))
+
+		case compiler.Multiply:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(left * right)
+
+		case compiler.Reminder:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(value.Number(int(left) % int(right)))
+
+		case compiler.Subtract:
+			right := vm.Pop().(value.Number)
+			left := vm.Pop().(value.Number)
+
+			vm.Push(left - right)
 
 		case compiler.Return:
-			return vm.stack.Pop()
+			return vm.Pop()
 
 		default:
 			panic("Unknown OpCode")
@@ -67,6 +134,18 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 	}
 
 	return nil
+}
+
+func (vm *VM) Push(val value.Value) {
+	vm.stack.Push(val)
+}
+
+func (vm *VM) Pop() value.Value {
+	return vm.stack.Pop()
+}
+
+func (vm *VM) Peek(distance int) value.Value {
+	return vm.stack.Peek(distance)
 }
 
 func (vm *VM) readByte() uint8 {

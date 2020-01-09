@@ -31,32 +31,32 @@ var parseRules ParseRules
 
 func init() {
 	parseRules = ParseRules{
-		{nil, nil, PrecedenceNone},                // At
-		{nil, nil, PrecedenceNone},                // Caret
-		{nil, nil, PrecedenceNone},                // Colon
-		{nil, nil, PrecedenceNone},                // Comma
-		{nil, nil, PrecedenceNone},                // Dot
-		{nil, nil, PrecedenceNone},                // LeftBrace
-		{nil, nil, PrecedenceNone},                // LeftBracket
-		{nil, nil, PrecedenceNone},                // LeftParent
-		{nil, nil, PrecedenceNone},                // Minus
-		{nil, nil, PrecedenceNone},                // Percent
-		{nil, (*Compiler).binary, PrecedenceTerm}, // Plus
-		{nil, nil, PrecedenceNone},                // RightBrace
-		{nil, nil, PrecedenceNone},                // RightBracket
-		{nil, nil, PrecedenceNone},                // RightParen
-		{nil, nil, PrecedenceNone},                // Semicolon
-		{nil, nil, PrecedenceNone},                // Slash
-		{nil, nil, PrecedenceNone},                // Start
+		{nil, nil, PrecedenceNone},                  // At
+		{nil, (*Compiler).binary, PrecedencePower},  // Caret
+		{nil, nil, PrecedenceNone},                  // Colon
+		{nil, nil, PrecedenceNone},                  // Comma
+		{nil, nil, PrecedenceNone},                  // Dot
+		{nil, nil, PrecedenceNone},                  // LeftBrace
+		{nil, nil, PrecedenceNone},                  // LeftBracket
+		{nil, nil, PrecedenceNone},                  // LeftParent
+		{nil, (*Compiler).binary, PrecedenceTerm},   // Minus
+		{nil, (*Compiler).binary, PrecedenceFactor}, // Percent
+		{nil, (*Compiler).binary, PrecedenceTerm},   // Plus
+		{nil, nil, PrecedenceNone},                  // RightBrace
+		{nil, nil, PrecedenceNone},                  // RightBracket
+		{nil, nil, PrecedenceNone},                  // RightParen
+		{nil, nil, PrecedenceNone},                  // Semicolon
+		{nil, (*Compiler).binary, PrecedenceFactor}, // Slash
+		{nil, (*Compiler).binary, PrecedenceFactor}, // Star
 
-		{nil, nil, PrecedenceNone}, // Bang
-		{nil, nil, PrecedenceNone}, // BangEqual
-		{nil, nil, PrecedenceNone}, // Equal
-		{nil, nil, PrecedenceNone}, // EqualEqual
-		{nil, nil, PrecedenceNone}, // Greater
-		{nil, nil, PrecedenceNone}, // GreaterEqual
-		{nil, nil, PrecedenceNone}, // Less
-		{nil, nil, PrecedenceNone}, // LessEqual
+		{nil, nil, PrecedenceNone},                      // Bang
+		{nil, (*Compiler).binary, PrecedenceEquality},   // BangEqual
+		{nil, nil, PrecedenceNone},                      // Equal
+		{nil, (*Compiler).binary, PrecedenceEquality},   // EqualEqual
+		{nil, (*Compiler).binary, PrecedenceComparison}, // Greater
+		{nil, (*Compiler).binary, PrecedenceComparison}, // GreaterEqual
+		{nil, (*Compiler).binary, PrecedenceComparison}, // Less
+		{nil, (*Compiler).binary, PrecedenceComparison}, // LessEqual
 
 		{nil, nil, PrecedenceNone},                // Identifier
 		{(*Compiler).number, nil, PrecedenceNone}, // Number

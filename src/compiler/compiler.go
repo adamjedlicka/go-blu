@@ -111,8 +111,31 @@ func (c *Compiler) binary(canAssign bool) {
 	c.parsePrecedence(rule.precedence + 1)
 
 	switch operatorType {
+	case parser.EqualEqual:
+		c.emitOpCode(Equal)
+	case parser.Greater:
+		c.emitOpCode(Greater)
+	case parser.GreaterEqual:
+		c.emitOpCode(GreaterEqual)
+	case parser.Less:
+		c.emitOpCode(Less)
+	case parser.LessEqual:
+		c.emitOpCode(LessEqual)
+	case parser.BangEqual:
+		c.emitOpCode(NotEqual)
+
 	case parser.Plus:
 		c.emitOpCode(Add)
+	case parser.Minus:
+		c.emitOpCode(Subtract)
+	case parser.Slash:
+		c.emitOpCode(Divide)
+	case parser.Star:
+		c.emitOpCode(Multiply)
+	case parser.Caret:
+		c.emitOpCode(Exponentiate)
+	case parser.Percent:
+		c.emitOpCode(Reminder)
 	}
 }
 
@@ -189,7 +212,7 @@ func (c *Compiler) expectNewlineOrSemicolon() {
 	}
 
 	// If we are at the end of the file then we don't need newline nor semicolon
-	if c.p.Current().Type() == parser.Eof {
+	if c.p.Previous().Type() == parser.Eof || c.p.Current().Type() == parser.Eof {
 		return
 	}
 
