@@ -2,6 +2,8 @@ package compiler
 
 import (
 	"github.com/adamjedlicka/go-blue/src/parser"
+	"github.com/adamjedlicka/go-blue/src/value"
+	"strconv"
 )
 
 type Compiler struct {
@@ -82,6 +84,15 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 	}
 }
 
+func (c *Compiler) number(canAssign bool) {
+	number, err := strconv.ParseFloat(c.p.Previous().Lexeme(), 64)
+	if err != nil {
+		panic(err)
+	}
+
+	c.emitConstant(value.Number(number))
+}
+
 func (c *Compiler) literal(canAssign bool) {
 	switch c.p.Previous().Type() {
 	case parser.False:
@@ -95,8 +106,24 @@ func (c *Compiler) literal(canAssign bool) {
 	}
 }
 
+func (c *Compiler) emitByte(byte uint8) {
+	c.chunk.pushCode(byte)
+}
+
+func (c *Compiler) emitShort(short uint16) {
+	c.chunk.pushCode(uint8((short >> 8) & 0xff))
+	c.chunk.pushCode(uint8(short & 0xff))
+}
+
 func (c *Compiler) emitOpCode(opCode OpCode) {
-	c.chunk.pushOpCode(opCode)
+	c.chunk.pushCode(uint8(opCode))
+}
+
+func (c *Compiler) emitConstant(value value.Value) {
+	constant := c.chunk.pushConstant(value)
+
+	c.emitOpCode(Constant)
+	c.emitShort(constant)
 }
 
 func (c *Compiler) consumeNewlines() {

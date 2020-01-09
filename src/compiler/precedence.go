@@ -53,9 +53,9 @@ var parseRules = []ParseRule{
 	{nil, nil, PrecedenceNone}, // Less
 	{nil, nil, PrecedenceNone}, // LessEqual
 
-	{nil, nil, PrecedenceNone}, // Identifier
-	{nil, nil, PrecedenceNone}, // Number
-	{nil, nil, PrecedenceNone}, // String
+	{nil, nil, PrecedenceNone},                // Identifier
+	{(*Compiler).number, nil, PrecedenceNone}, // Number
+	{nil, nil, PrecedenceNone},                // String
 
 	{nil, nil, PrecedenceNone},                 // And
 	{nil, nil, PrecedenceNone},                 // Assert
