@@ -31,9 +31,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 	vm.chunk = chunk
 
 	for true {
-		byte := vm.readByte()
-
-		switch compiler.OpCode(byte) {
+		switch compiler.OpCode(vm.readByte()) {
 
 		case compiler.Constant:
 			offset := vm.readShort()
@@ -149,11 +147,9 @@ func (vm *VM) Peek(distance int) value.Value {
 }
 
 func (vm *VM) readByte() uint8 {
-	byte := vm.chunk.Code()[vm.ip]
-
 	vm.ip++
 
-	return byte
+	return vm.chunk.Code()[vm.ip-1]
 }
 
 func (vm *VM) readShort() uint16 {
