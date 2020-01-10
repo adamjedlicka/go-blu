@@ -140,12 +140,20 @@ func (c *Compiler) binary(canAssign bool) {
 }
 
 func (c *Compiler) number(canAssign bool) {
-	number, err := strconv.ParseFloat(c.p.Previous().Lexeme(), 64)
+	lexeme := c.p.Previous().Lexeme()
+	number, err := strconv.ParseFloat(lexeme, 64)
 	if err != nil {
 		panic(err)
 	}
 
 	c.emitConstant(value.Number(number))
+}
+
+func (c *Compiler) string(canAssign bool) {
+	lexeme := c.p.Previous().Lexeme()
+	string := lexeme[1 : len(lexeme)-1]
+
+	c.emitConstant(value.String(string))
 }
 
 func (c *Compiler) literal(canAssign bool) {

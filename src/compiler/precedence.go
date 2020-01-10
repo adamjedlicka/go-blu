@@ -60,7 +60,7 @@ func init() {
 
 		{nil, nil, PrecedenceNone},                // Identifier
 		{(*Compiler).number, nil, PrecedenceNone}, // Number
-		{nil, nil, PrecedenceNone},                // String
+		{(*Compiler).string, nil, PrecedenceNone}, // String
 
 		{nil, nil, PrecedenceNone},                 // And
 		{nil, nil, PrecedenceNone},                 // Assert

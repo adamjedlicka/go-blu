@@ -88,10 +88,26 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			vm.Push(value.Boolean(left != right))
 
 		case compiler.Add:
-			left := vm.Pop().(value.Number)
-			right := vm.Pop().(value.Number)
+			rightValue := vm.Pop()
+			leftValue := vm.Pop()
 
-			vm.Push(left + right)
+			switch left := leftValue.(type) {
+
+			case value.Number:
+				if right, ok := rightValue.(value.Number); ok {
+					vm.Push(left + right)
+				} else {
+					// TODO : Error handling
+					panic("Both operands must be numbers.")
+				}
+
+			case value.String:
+				vm.Push(left + rightValue.ToString())
+
+			default:
+				// TODO : Error handling
+				panic("Left operand must be Number or String.")
+			}
 
 		case compiler.Divide:
 			right := vm.Pop().(value.Number)

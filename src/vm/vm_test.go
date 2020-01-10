@@ -95,6 +95,18 @@ func TestItHasEqualityOperator(t *testing.T) {
 			code:   "return 0 == false",
 			expect: false,
 		},
+		{
+			code:   "return \"ab\" == \"a\" + \"b\"",
+			expect: true,
+		},
+		{
+			code:   "return \"ab1\" == \"a\" + \"b\" + 1",
+			expect: true,
+		},
+		{
+			code:   "return \"a\" == \"a\" + \"b\"",
+			expect: false,
+		},
 	}
 	for _, test := range tests {
 		t.Run("", func(t *testing.T) {
@@ -123,6 +135,14 @@ func TestItHasInEqualityOperator(t *testing.T) {
 		{
 			code:   "return false != nil",
 			expect: true,
+		},
+		{
+			code:   "return \"a\" != \"b\"",
+			expect: true,
+		},
+		{
+			code:   "return \"a\" != \"a\"",
+			expect: false,
 		},
 	}
 	for _, test := range tests {

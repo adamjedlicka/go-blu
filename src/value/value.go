@@ -1,5 +1,6 @@
 package value
 
 type Value interface {
-	IsTruthy() bool
+	IsTruthy() Boolean
+	ToString() String
 }
