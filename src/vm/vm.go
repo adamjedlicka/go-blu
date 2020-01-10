@@ -24,7 +24,7 @@ func Exec(source string) value.Value {
 	c := compiler.NewCompiler(source)
 	chunk := c.Compile()
 	vm := NewVM()
-	return vm.Interpret(&chunk)
+	return vm.Interpret(chunk)
 }
 
 func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {

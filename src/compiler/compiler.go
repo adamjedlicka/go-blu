@@ -1,24 +1,32 @@
 package compiler
 
 import (
+	"fmt"
 	"github.com/adamjedlicka/go-blue/src/parser"
 	"github.com/adamjedlicka/go-blue/src/value"
+	"os"
 	"strconv"
 )
 
 type Compiler struct {
-	p     parser.Parser
-	chunk Chunk
+	p     *parser.Parser
+	chunk *Chunk
+
+	hadError  bool
+	panicMode bool
 }
 
 func NewCompiler(source string) Compiler {
 	return Compiler{
 		p:     parser.NewParser(source),
 		chunk: NewChunk(),
+
+		hadError:  false,
+		panicMode: false,
 	}
 }
 
-func (c *Compiler) Compile() Chunk {
+func (c *Compiler) Compile() *Chunk {
 	for true {
 		c.advance()
 
@@ -29,6 +37,10 @@ func (c *Compiler) Compile() Chunk {
 
 	for !c.match(parser.Eof) {
 		c.declaration()
+	}
+
+	if c.hadError {
+		return nil
 	}
 
 	return c.chunk
@@ -78,8 +90,7 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 
 	prefixRule := parseRules[c.p.Previous().Type()].prefix
 	if prefixRule == nil {
-		// TODO : Error handling
-		panic("Expect expression.")
+		c.error("Expect expression.")
 
 		return
 	}
@@ -95,8 +106,7 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 	}
 
 	if canAssign && c.match(parser.Equal) {
-		// TODO : Error handling
-		panic("Invalid assignment target.")
+		c.error("Invalid assignment target.")
 
 		// Parse the expression so compiler prints propper error messages.
 		c.expression()
@@ -180,7 +190,7 @@ func (c *Compiler) literal(canAssign bool) {
 	case parser.Nil:
 		c.emitOpCode(Nil)
 	default:
-		panic("Not a literal token type")
+		panic("unreachable")
 	}
 }
 
@@ -253,8 +263,7 @@ func (c *Compiler) advance() {
 			break
 		}
 
-		// TODO : Add proper error reporting
-		panic("ENCOUNTERED ERROR TOKEN")
+		c.errorAtCurrent(c.p.Current().Lexeme())
 	}
 
 	c.skipNewlines()
@@ -277,8 +286,7 @@ func (c *Compiler) consume(tokenType parser.TokenType, message string) {
 		return
 	}
 
-	// TODO : Add proper error reporting
-	panic(message)
+	c.errorAtCurrent(message)
 }
 
 // Checks whether next token is of the given type.
@@ -291,4 +299,35 @@ func (c *Compiler) match(tokenType parser.TokenType) bool {
 	c.advance()
 
 	return true
+}
+
+func (c *Compiler) error(message string) {
+	c.errorAt(c.p.Previous(), message)
+}
+
+func (c *Compiler) errorAtCurrent(message string) {
+	c.errorAt(c.p.Current(), message)
+}
+
+func (c *Compiler) errorAt(token parser.Token, message string) {
+	if c.panicMode {
+		return
+	}
+
+	c.panicMode = true
+
+	_, _ = fmt.Fprintf(os.Stderr, "[line %d] Error", token.Line())
+
+	switch token.Type() {
+	case parser.Eof:
+		_, _ = fmt.Fprintf(os.Stderr, " at end")
+	case parser.Newline:
+		_, _ = fmt.Fprintf(os.Stderr, " at newline")
+	default:
+		_, _ = fmt.Fprintf(os.Stderr, " at '%s'", token.Lexeme())
+	}
+
+	_, _ = fmt.Fprintf(os.Stderr, ": %s\n", message)
+
+	c.hadError = true
 }

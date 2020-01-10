@@ -11,8 +11,8 @@ type Parser struct {
 	current  Token
 }
 
-func NewParser(source string) Parser {
-	return Parser{
+func NewParser(source string) *Parser {
+	return &Parser{
 		source:   source,
 		from:     0,
 		at:       0,

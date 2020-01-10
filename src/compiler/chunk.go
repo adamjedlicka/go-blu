@@ -9,8 +9,8 @@ type Chunk struct {
 	constants []value.Value
 }
 
-func NewChunk() Chunk {
-	return Chunk{
+func NewChunk() *Chunk {
+	return &Chunk{
 		code:      make([]uint8, 0),
 		constants: make([]value.Value, 0),
 	}
