@@ -100,12 +100,16 @@ func TestItHasEqualityOperator(t *testing.T) {
 			expect: true,
 		},
 		{
-			code:   "return \"ab1\" == \"a\" + \"b\" + 1",
+			code:   "return \"ab-1\" == \"a\" + \"b\" + - 1",
 			expect: true,
 		},
 		{
 			code:   "return \"a\" == \"a\" + \"b\"",
 			expect: false,
+		},
+		{
+			code:   "return !!true == !false",
+			expect: true,
 		},
 	}
 	for _, test := range tests {

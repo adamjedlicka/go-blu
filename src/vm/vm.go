@@ -87,6 +87,12 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 
 			vm.Push(value.Boolean(left != right))
 
+		case compiler.Not:
+			vm.Push(!vm.Pop().IsTruthy())
+
+		case compiler.Negate:
+			vm.Push(-vm.Pop().(value.Number))
+
 		case compiler.Add:
 			rightValue := vm.Pop()
 			leftValue := vm.Pop()

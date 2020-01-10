@@ -17,6 +17,9 @@ const (
 	LessEqual
 	NotEqual
 
+	Not
+	Negate
+
 	Add
 	Divide
 	Exponentiate

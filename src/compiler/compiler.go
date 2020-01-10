@@ -103,6 +103,21 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 	}
 }
 
+func (c *Compiler) unary(canAssign bool) {
+	operatorType := c.p.Previous().Type()
+
+	c.parsePrecedence(PrecedenceUnary)
+
+	switch operatorType {
+	case parser.Bang:
+		c.emitOpCode(Not)
+	case parser.Minus:
+		c.emitOpCode(Negate)
+	default:
+		panic("unreachable")
+	}
+}
+
 func (c *Compiler) binary(canAssign bool) {
 	operatorType := c.p.Previous().Type()
 
