@@ -10,6 +10,18 @@ const (
 
 	Pop
 
+	GetLocal
+	SetLocal
+	DefineGlobal
+	GetGlobal
+	SetGlobal
+	GetUpvalue
+	SetUpvalue
+	GetProperty
+	SetProperty
+	GetSubscript
+	SetSubscript
+
 	Equal
 	Greater
 	GreaterEqual

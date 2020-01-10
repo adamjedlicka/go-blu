@@ -8,9 +8,16 @@ import (
 	"strconv"
 )
 
+const MaxLocals = 65000
+
 type Compiler struct {
 	p     *parser.Parser
 	chunk *Chunk
+
+	locals   []Local
+	upvalues []Upvalue
+
+	scopeDepth int8
 
 	hadError  bool
 	panicMode bool
@@ -20,6 +27,11 @@ func NewCompiler(name string, source string) Compiler {
 	return Compiler{
 		p:     parser.NewParser(source),
 		chunk: NewChunk(name),
+
+		locals:   make([]Local, 0),
+		upvalues: make([]Upvalue, 0),
+
+		scopeDepth: 0,
 
 		hadError:  false,
 		panicMode: false,
@@ -54,7 +66,100 @@ func (c *Compiler) Compile() *Chunk {
 }
 
 func (c *Compiler) declaration() {
-	c.statement()
+	if c.match(parser.Var) {
+		c.varDeclaration()
+	} else {
+		c.statement()
+	}
+
+	if c.panicMode {
+		c.synchronize()
+	}
+}
+
+func (c *Compiler) varDeclaration() {
+	name := c.parseVariable("Expect variable name.")
+
+	if c.match(parser.Equal) {
+		c.expression()
+	} else {
+		c.emitOpCode(Nil)
+	}
+
+	c.defineVariable(name)
+
+	c.expectNewlineOrSemicolon()
+}
+
+func (c *Compiler) addLocal(name parser.Token) {
+	if len(c.locals) == MaxLocals {
+		c.error("Too many local variables in function.")
+		return
+	}
+
+	local := Local{
+		name:      name,
+		depth:     -1,
+		isUpvalue: false,
+	}
+
+	c.locals = append(c.locals, local)
+}
+
+func (c *Compiler) declareVariable() {
+	// Global variables are implicitly declared.
+	if c.scopeDepth == 0 {
+		return
+	}
+
+	name := c.p.Previous()
+
+	for i := len(c.locals) - 1; i >= 0; i-- {
+		local := c.locals[i]
+
+		if local.depth != -1 && local.depth < c.scopeDepth {
+			break
+		}
+
+		if name.Lexeme() == local.name.Lexeme() {
+			c.error("Variable with this name already declared in this scope.")
+		}
+	}
+
+	c.addLocal(name)
+}
+
+func (c *Compiler) markInitialized() {
+	if c.scopeDepth == 0 {
+		return
+	}
+
+	c.locals[len(c.locals)-1].depth = c.scopeDepth
+}
+
+func (c *Compiler) defineVariable(index uint16) {
+	if c.scopeDepth > 0 {
+		c.markInitialized()
+		return
+	}
+
+	c.emitOpCode(DefineGlobal)
+	c.emitShort(index)
+}
+
+func (c *Compiler) identifierConstant(name parser.Token) uint16 {
+	return c.makeConstant(value.String(name.Lexeme()))
+}
+
+func (c *Compiler) parseVariable(message string) uint16 {
+	c.consume(parser.Identifier, message)
+
+	c.declareVariable()
+	if c.scopeDepth > 0 {
+		return 0
+	}
+
+	return c.identifierConstant(c.p.Previous())
 }
 
 func (c *Compiler) statement() {
@@ -102,7 +207,7 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 		return
 	}
 
-	canAssign := precedence < PrecedenceAssignment
+	canAssign := precedence <= PrecedenceAssignment
 	prefixRule(c, canAssign)
 
 	for precedence < parseRules[c.p.Current().Type()].precedence {
@@ -115,7 +220,7 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 	if canAssign && c.match(parser.Equal) {
 		c.error("Invalid assignment target.")
 
-		// Parse the expression so compiler prints propper error messages.
+		// Parse the expression so compiler prints proper error messages.
 		c.expression()
 	}
 }
@@ -201,6 +306,50 @@ func (c *Compiler) literal(canAssign bool) {
 	}
 }
 
+func (c *Compiler) resolveLocal(name parser.Token) (uint16, bool) {
+	for i := len(c.locals) - 1; i >= 0; i-- {
+		local := c.locals[i]
+		if local.name.Lexeme() == name.Lexeme() {
+			if local.depth == -1 {
+				c.error("Cannot read local variable in its own initializer.")
+			}
+
+			return uint16(i), true
+		}
+	}
+
+	return 0, false
+}
+
+func (c *Compiler) namedVariable(name parser.Token, canAssign bool) {
+	var getOp OpCode
+	var setOp OpCode
+
+	arg, ok := c.resolveLocal(name)
+
+	if ok {
+		getOp = GetLocal
+		setOp = SetLocal
+	} else {
+		arg = c.identifierConstant(name)
+		getOp = GetGlobal
+		setOp = SetGlobal
+	}
+
+	if canAssign && c.match(parser.Equal) {
+		c.expression()
+		c.emitOpCode(setOp)
+		c.emitShort(arg)
+	} else {
+		c.emitOpCode(getOp)
+		c.emitShort(arg)
+	}
+}
+
+func (c *Compiler) variable(canAssign bool) {
+	c.namedVariable(c.p.Previous(), canAssign)
+}
+
 func (c *Compiler) emitByte(byte uint8) {
 	c.chunk.pushCode(byte, c.p.Current().Line())
 }
@@ -214,8 +363,18 @@ func (c *Compiler) emitOpCode(opCode OpCode) {
 	c.chunk.pushCode(uint8(opCode), c.p.Current().Line())
 }
 
-func (c *Compiler) emitConstant(value value.Value) {
+func (c *Compiler) makeConstant(value value.Value) uint16 {
 	constant := c.chunk.pushConstant(value)
+	if constant > MaxConstants {
+		c.error("Too many constants in one chunk.")
+		return 0
+	}
+
+	return constant
+}
+
+func (c *Compiler) emitConstant(value value.Value) {
+	constant := c.makeConstant(value)
 
 	c.emitOpCode(Constant)
 	c.emitShort(constant)
@@ -306,6 +465,19 @@ func (c *Compiler) match(tokenType parser.TokenType) bool {
 	c.advance()
 
 	return true
+}
+
+func (c *Compiler) synchronize() {
+	c.panicMode = false
+
+	for c.p.Current().Type() != parser.Eof {
+		switch c.p.Current().Type() {
+		case parser.Class, parser.Fn, parser.Var, parser.For, parser.If, parser.While:
+			return
+		default:
+			c.advance()
+		}
+	}
 }
 
 func (c *Compiler) error(message string) {

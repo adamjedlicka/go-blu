@@ -48,6 +48,7 @@ const (
 	Fn
 	For
 	Foreign
+	If
 	Import
 	Nil
 	Or

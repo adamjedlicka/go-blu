@@ -196,3 +196,11 @@ func TestItHasComparisonOperators(t *testing.T) {
 		})
 	}
 }
+
+func TestItHasGlobalVariables(t *testing.T) {
+	res := Exec("var a = 3; a = a * a; a")
+
+	if res.(value.Number) != 9 {
+		t.Error(res)
+	}
+}

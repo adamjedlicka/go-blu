@@ -12,29 +12,40 @@ type VM struct {
 	chunk *compiler.Chunk
 	stack *Stack
 	ip    int
+
+	globals map[value.String]value.Value
 }
 
 func NewVM() VM {
 	return VM{
 		chunk: nil,
-		stack: NewStack(),
+		stack: nil,
 		ip:    0,
+
+		globals: make(map[value.String]value.Value),
 	}
 }
 
 func Exec(source string) value.Value {
+	vm := NewVM()
+
+	return vm.Exec(source)
+}
+
+func (vm *VM) Exec(source string) value.Value {
 	c := compiler.NewCompiler("script", source)
 	chunk := c.Compile()
 	if chunk == nil {
 		return value.Nil{}
 	}
 
-	vm := NewVM()
 	return vm.Interpret(chunk)
 }
 
 func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 	vm.chunk = chunk
+	vm.stack = NewStack()
+	vm.ip = 0
 
 	for true {
 		switch compiler.OpCode(vm.readByte()) {
@@ -56,6 +67,55 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 
 		case compiler.Pop:
 			vm.Pop()
+
+		case compiler.GetLocal:
+			panic("unimplemented")
+
+		case compiler.SetLocal:
+			panic("unimplemented")
+
+		case compiler.DefineGlobal:
+			name := vm.readString()
+
+			vm.globals[name] = vm.Pop()
+
+		case compiler.GetGlobal:
+			name := vm.readString()
+
+			if value, ok := vm.globals[name]; ok {
+				vm.Push(value)
+			} else {
+				vm.runtimeError("Undefined global variable '%s'", name.ToString())
+				return nil
+			}
+
+		case compiler.SetGlobal:
+			name := vm.readString()
+
+			if _, ok := vm.globals[name]; ok {
+				vm.globals[name] = vm.Peek(0)
+			} else {
+				vm.runtimeError("Undefined global variable '%s'", name.ToString())
+				return nil
+			}
+
+		case compiler.GetUpvalue:
+			panic("unimplemented")
+
+		case compiler.SetUpvalue:
+			panic("unimplemented")
+
+		case compiler.GetProperty:
+			panic("unimplemented")
+
+		case compiler.SetProperty:
+			panic("unimplemented")
+
+		case compiler.GetSubscript:
+			panic("unimplemented")
+
+		case compiler.SetSubscript:
+			panic("unimplemented")
 
 		case compiler.Equal:
 			left := vm.Pop()
@@ -187,6 +247,14 @@ func (vm *VM) readShort() uint16 {
 	vm.ip += 2
 
 	return (short1 << 8) | short2
+}
+
+func (vm *VM) readConstant() value.Value {
+	return vm.chunk.Constants()[vm.readShort()]
+}
+
+func (vm *VM) readString() value.String {
+	return vm.readConstant().(value.String)
 }
 
 func (vm *VM) runtimeError(message string, a ...interface{}) {

@@ -14,6 +14,8 @@ func main() {
 func runRepl() {
 	reader := bufio.NewReader(os.Stdin)
 
+	vm := vm.NewVM()
+
 	for true {
 		line, err := reader.ReadString('\n')
 		if err != nil {

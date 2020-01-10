@@ -1,5 +1,7 @@
 package compiler
 
+import "github.com/adamjedlicka/go-blue/src/parser"
+
 type Precedence uint8
 
 type ParseFn func(c *Compiler, canAssign bool)
@@ -51,16 +53,16 @@ func init() {
 
 		{(*Compiler).unary, nil, PrecedenceNone},        // Bang
 		{nil, (*Compiler).binary, PrecedenceEquality},   // BangEqual
-		{nil, nil, PrecedenceNone},                      // Equal
+		{nil, (*Compiler).binary, PrecedenceNone},       // Equal
 		{nil, (*Compiler).binary, PrecedenceEquality},   // EqualEqual
 		{nil, (*Compiler).binary, PrecedenceComparison}, // Greater
 		{nil, (*Compiler).binary, PrecedenceComparison}, // GreaterEqual
 		{nil, (*Compiler).binary, PrecedenceComparison}, // Less
 		{nil, (*Compiler).binary, PrecedenceComparison}, // LessEqual
 
-		{nil, nil, PrecedenceNone},                // Identifier
-		{(*Compiler).number, nil, PrecedenceNone}, // Number
-		{(*Compiler).string, nil, PrecedenceNone}, // String
+		{(*Compiler).variable, nil, PrecedenceNone}, // Identifier
+		{(*Compiler).number, nil, PrecedenceNone},   // Number
+		{(*Compiler).string, nil, PrecedenceNone},   // String
 
 		{nil, nil, PrecedenceNone},                 // And
 		{nil, nil, PrecedenceNone},                 // Assert
@@ -72,6 +74,7 @@ func init() {
 		{nil, nil, PrecedenceNone},                 // Fn
 		{nil, nil, PrecedenceNone},                 // For
 		{nil, nil, PrecedenceNone},                 // Foreign
+		{nil, nil, PrecedenceNone},                 // If
 		{nil, nil, PrecedenceNone},                 // Import
 		{(*Compiler).literal, nil, PrecedenceNone}, // Nil
 		{nil, nil, PrecedenceNone},                 // Or
@@ -84,5 +87,9 @@ func init() {
 		{nil, nil, PrecedenceNone}, // Newline
 
 		{nil, nil, PrecedenceNone}, // Error
+	}
+
+	if len(parseRules)-1 != int(parser.Error) {
+		panic("ParseRules table corrupt.")
 	}
 }

@@ -11,5 +11,5 @@ func (s String) ToString() String {
 }
 
 func (s String) String() string {
-	return "\"" + string(s) + "\""
+	return string(s)
 }
