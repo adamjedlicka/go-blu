@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/adamjedlicka/go-blue/src/vm"
+	"github.com/adamjedlicka/go-blu/src/vm"
 	"os"
 )
 

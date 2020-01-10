@@ -1,6 +1,6 @@
 package compiler
 
-import "github.com/adamjedlicka/go-blue/src/value"
+import "github.com/adamjedlicka/go-blu/src/value"
 
 const MaxConstants = 65000
 

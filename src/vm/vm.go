@@ -2,8 +2,8 @@ package vm
 
 import (
 	"fmt"
-	"github.com/adamjedlicka/go-blue/src/compiler"
-	"github.com/adamjedlicka/go-blue/src/value"
+	"github.com/adamjedlicka/go-blu/src/compiler"
+	"github.com/adamjedlicka/go-blu/src/value"
 	"math"
 	"os"
 )

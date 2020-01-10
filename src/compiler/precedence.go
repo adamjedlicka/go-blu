@@ -1,6 +1,6 @@
 package compiler
 
-import "github.com/adamjedlicka/go-blue/src/parser"
+import "github.com/adamjedlicka/go-blu/src/parser"
 
 type Precedence uint8
 

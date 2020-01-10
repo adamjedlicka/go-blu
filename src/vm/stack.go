@@ -1,6 +1,6 @@
 package vm
 
-import "github.com/adamjedlicka/go-blue/src/value"
+import "github.com/adamjedlicka/go-blu/src/value"
 
 type Stack struct {
 	values []value.Value
