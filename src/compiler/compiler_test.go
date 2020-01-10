@@ -21,7 +21,7 @@ func TestItCompilesLiterals(t *testing.T) {
 		t.Error(chunk.code[2])
 	}
 
-	if chunk.code[3] != uint8(Pop) {
+	if chunk.code[3] != uint8(Return) {
 		t.Error(chunk.code[3])
 	}
 }

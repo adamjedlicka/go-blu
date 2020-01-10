@@ -23,6 +23,10 @@ func NewVM() VM {
 func Exec(source string) value.Value {
 	c := compiler.NewCompiler(source)
 	chunk := c.Compile()
+	if chunk == nil {
+		return value.Nil{}
+	}
+
 	vm := NewVM()
 	return vm.Interpret(chunk)
 }

@@ -11,35 +11,35 @@ func TestItHasBinaryNumberOperators(t *testing.T) {
 		expect float64
 	}{
 		{
-			code:   "return 1 + 1",
+			code:   "1 + 1",
 			expect: 2,
 		},
 		{
-			code:   "return 1.1 + 1.1",
+			code:   "1.1 + 1.1",
 			expect: 2.2,
 		},
 		{
-			code:   "return 100000000 + 1000",
+			code:   "100000000 + 1000",
 			expect: 100001000,
 		},
 		{
-			code:   "return 10 * 10",
+			code:   "10 * 10",
 			expect: 100,
 		},
 		{
-			code:   "return 10 / 3",
+			code:   "10 / 3",
 			expect: float64(10) / float64(3),
 		},
 		{
-			code:   "return 10 % 3",
+			code:   "10 % 3",
 			expect: 1,
 		},
 		{
-			code:   "return 2^3",
+			code:   "2^3",
 			expect: 8,
 		},
 		{
-			code:   "return 1 - 10",
+			code:   "1 - 10",
 			expect: -9,
 		},
 	}
@@ -60,55 +60,55 @@ func TestItHasEqualityOperator(t *testing.T) {
 		expect bool
 	}{
 		{
-			code:   "return 1 == 1",
+			code:   "1 == 1",
 			expect: true,
 		},
 		{
-			code:   "return 1.1 == 1.1",
+			code:   "1.1 == 1.1",
 			expect: true,
 		},
 		{
-			code:   "return true == true",
+			code:   "true == true",
 			expect: true,
 		},
 		{
-			code:   "return false == false",
+			code:   "false == false",
 			expect: true,
 		},
 		{
-			code:   "return 1 == 2",
+			code:   "1 == 2",
 			expect: false,
 		},
 		{
-			code:   "return 1.1 == 1.11",
+			code:   "1.1 == 1.11",
 			expect: false,
 		},
 		{
-			code:   "return true == false",
+			code:   "true == false",
 			expect: false,
 		},
 		{
-			code:   "return 1 == true",
+			code:   "1 == true",
 			expect: false,
 		},
 		{
-			code:   "return 0 == false",
+			code:   "0 == false",
 			expect: false,
 		},
 		{
-			code:   "return \"ab\" == \"a\" + \"b\"",
+			code:   "\"ab\" == \"a\" + \"b\"",
 			expect: true,
 		},
 		{
-			code:   "return \"ab-1\" == \"a\" + \"b\" + - 1",
+			code:   "\"ab-1\" == \"a\" + \"b\" + - 1",
 			expect: true,
 		},
 		{
-			code:   "return \"a\" == \"a\" + \"b\"",
+			code:   "\"a\" == \"a\" + \"b\"",
 			expect: false,
 		},
 		{
-			code:   "return !!true == !false",
+			code:   "!!true == !false",
 			expect: true,
 		},
 	}

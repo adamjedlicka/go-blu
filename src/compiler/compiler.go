@@ -39,6 +39,11 @@ func (c *Compiler) Compile() *Chunk {
 		c.declaration()
 	}
 
+	// Patch last Pop for REPL
+	if c.chunk.code[len(c.chunk.code)-1] == uint8(Pop) {
+		c.chunk.code[len(c.chunk.code)-1] = uint8(Return)
+	}
+
 	if c.hadError {
 		return nil
 	}
