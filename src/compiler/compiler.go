@@ -16,10 +16,10 @@ type Compiler struct {
 	panicMode bool
 }
 
-func NewCompiler(source string) Compiler {
+func NewCompiler(name string, source string) Compiler {
 	return Compiler{
 		p:     parser.NewParser(source),
-		chunk: NewChunk(),
+		chunk: NewChunk(name),
 
 		hadError:  false,
 		panicMode: false,
@@ -40,8 +40,10 @@ func (c *Compiler) Compile() *Chunk {
 	}
 
 	// Patch last Pop for REPL
-	if c.chunk.code[len(c.chunk.code)-1] == uint8(Pop) {
+	if len(c.chunk.code) > 0 && c.chunk.code[len(c.chunk.code)-1] == uint8(Pop) {
 		c.chunk.code[len(c.chunk.code)-1] = uint8(Return)
+	} else {
+		c.emitReturn()
 	}
 
 	if c.hadError {
@@ -200,16 +202,16 @@ func (c *Compiler) literal(canAssign bool) {
 }
 
 func (c *Compiler) emitByte(byte uint8) {
-	c.chunk.pushCode(byte)
+	c.chunk.pushCode(byte, c.p.Current().Line())
 }
 
 func (c *Compiler) emitShort(short uint16) {
-	c.chunk.pushCode(uint8((short >> 8) & 0xff))
-	c.chunk.pushCode(uint8(short & 0xff))
+	c.chunk.pushCode(uint8((short>>8)&0xff), c.p.Current().Line())
+	c.chunk.pushCode(uint8(short&0xff), c.p.Current().Line())
 }
 
 func (c *Compiler) emitOpCode(opCode OpCode) {
-	c.chunk.pushCode(uint8(opCode))
+	c.chunk.pushCode(uint8(opCode), c.p.Current().Line())
 }
 
 func (c *Compiler) emitConstant(value value.Value) {

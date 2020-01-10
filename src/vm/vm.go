@@ -1,9 +1,11 @@
 package vm
 
 import (
+	"fmt"
 	"github.com/adamjedlicka/go-blue/src/compiler"
 	"github.com/adamjedlicka/go-blue/src/value"
 	"math"
+	"os"
 )
 
 type VM struct {
@@ -21,7 +23,7 @@ func NewVM() VM {
 }
 
 func Exec(source string) value.Value {
-	c := compiler.NewCompiler(source)
+	c := compiler.NewCompiler("script", source)
 	chunk := c.Compile()
 	if chunk == nil {
 		return value.Nil{}
@@ -107,16 +109,16 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 				if right, ok := rightValue.(value.Number); ok {
 					vm.Push(left + right)
 				} else {
-					// TODO : Error handling
-					panic("Both operands must be numbers.")
+					vm.runtimeError("Both operands must be numbers.")
+					return nil
 				}
 
 			case value.String:
 				vm.Push(left + rightValue.ToString())
 
 			default:
-				// TODO : Error handling
-				panic("Left operand must be Number or String.")
+				vm.runtimeError("Left operand must be Number or String.")
+				return nil
 			}
 
 		case compiler.Divide:
@@ -153,7 +155,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			return vm.Pop()
 
 		default:
-			panic("Unknown OpCode")
+			panic("unreachable")
 		}
 	}
 
@@ -185,4 +187,14 @@ func (vm *VM) readShort() uint16 {
 	vm.ip += 2
 
 	return (short1 << 8) | short2
+}
+
+func (vm *VM) runtimeError(message string, a ...interface{}) {
+	_, _ = fmt.Fprintf(os.Stderr, message, a...)
+	_, _ = fmt.Fprintf(os.Stderr, "\n")
+
+	line := vm.chunk.Lines()[vm.ip-1]
+	name := vm.chunk.Name()
+
+	_, _ = fmt.Fprintf(os.Stderr, "[line %d] in %s\n", line, name)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func TestItCompilesLiterals(t *testing.T) {
-	compiler := NewCompiler("   true   ;  false   ")
+	compiler := NewCompiler("", "   true   ;  false   ")
 	chunk := compiler.Compile()
 
 	if chunk.code[0] != uint8(True) {
@@ -27,7 +27,7 @@ func TestItCompilesLiterals(t *testing.T) {
 }
 
 func TestItCompilesNumbers(t *testing.T) {
-	compiler := NewCompiler("123.456; 789")
+	compiler := NewCompiler("", "123.456; 789")
 	chunk := compiler.Compile()
 
 	if chunk.code[0] != uint8(Constant) {
@@ -68,7 +68,7 @@ func TestItCompilesNumbers(t *testing.T) {
 }
 
 func TestItCompilesBinaryOperators(t *testing.T) {
-	compiler := NewCompiler("1 + 2")
+	compiler := NewCompiler("", "1 + 2")
 	chunk := compiler.Compile()
 
 	if chunk.code[6] != uint8(Add) {
