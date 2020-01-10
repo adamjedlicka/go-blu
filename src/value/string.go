@@ -9,3 +9,7 @@ func (s String) IsTruthy() Boolean {
 func (s String) ToString() String {
 	return s
 }
+
+func (s String) String() string {
+	return "\"" + string(s) + "\""
+}

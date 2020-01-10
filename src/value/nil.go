@@ -9,3 +9,7 @@ func (n Nil) IsTruthy() Boolean {
 func (n Nil) ToString() String {
 	return "nil"
 }
+
+func (n Nil) String() string {
+	return "nil"
+}
