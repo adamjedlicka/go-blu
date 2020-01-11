@@ -1,8 +1,7 @@
 package parser
 
 type Parser struct {
-	source   string
-	runes    []rune
+	source   []rune
 	from     int
 	at       int
 	lineFrom int
@@ -12,10 +11,9 @@ type Parser struct {
 	current  Token
 }
 
-func NewParser(source string) *Parser {
+func NewParser(source []rune) *Parser {
 	return &Parser{
 		source:   source,
-		runes:    []rune(source),
 		from:     0,
 		at:       0,
 		lineFrom: 1,
@@ -180,7 +178,7 @@ func (p *Parser) identifier() Token {
 		p.advance()
 	}
 
-	if tokenType, ok := keywords[string(p.runes[p.from:p.at])]; ok {
+	if tokenType, ok := keywords[string(p.source[p.from:p.at])]; ok {
 		return p.makeToken(tokenType)
 	}
 
@@ -194,7 +192,7 @@ func (p *Parser) makeToken(tokenType TokenType) Token {
 	case Eof:
 		return NewToken(tokenType, "<Eof>", p.lineFrom)
 	default:
-		return NewToken(tokenType, string(p.runes[p.from:p.at]), p.lineFrom)
+		return NewToken(tokenType, string(p.source[p.from:p.at]), p.lineFrom)
 	}
 }
 
@@ -219,7 +217,7 @@ func (p *Parser) advance() rune {
 
 	p.at++
 
-	return rune(p.runes[p.at-1])
+	return p.source[p.at-1]
 }
 
 func (p *Parser) peek() rune {
@@ -227,7 +225,7 @@ func (p *Parser) peek() rune {
 		return 0
 	}
 
-	return rune(p.runes[p.at])
+	return p.source[p.at]
 }
 
 func (p *Parser) peekNext() rune {
@@ -235,7 +233,7 @@ func (p *Parser) peekNext() rune {
 		return 0
 	}
 
-	return rune(p.runes[p.at+1])
+	return p.source[p.at+1]
 }
 
 func (p *Parser) match(expected rune) bool {
@@ -252,11 +250,11 @@ func (p *Parser) match(expected rune) bool {
 }
 
 func (p *Parser) isAtEnd() bool {
-	return len(p.runes) == p.at
+	return len(p.source) == p.at
 }
 
 func (p *Parser) isBeforeTheEnd() bool {
-	return len(p.runes) == p.at+1
+	return len(p.source) == p.at+1
 }
 
 func (p *Parser) skipWhitespace() {

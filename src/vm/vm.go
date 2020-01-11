@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"github.com/adamjedlicka/go-blu/src/compiler"
+	"github.com/adamjedlicka/go-blu/src/parser"
 	"github.com/adamjedlicka/go-blu/src/value"
 	"math"
 	"os"
@@ -33,7 +34,8 @@ func Exec(source string) value.Value {
 }
 
 func (vm *VM) Exec(source string) value.Value {
-	c := compiler.NewCompiler("script", source)
+	p := parser.NewParser([]rune(source))
+	c := compiler.NewCompiler("script", p)
 	chunk := c.Compile()
 	if chunk == nil {
 		return value.Nil{}

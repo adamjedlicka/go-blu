@@ -24,9 +24,9 @@ type Compiler struct {
 	panicMode bool
 }
 
-func NewCompiler(name string, source string) Compiler {
+func NewCompiler(name string, parser *parser.Parser) Compiler {
 	return Compiler{
-		p:     parser.NewParser(source),
+		p:     parser,
 		chunk: NewChunk(name),
 
 		locals:   make([]Local, 0),
