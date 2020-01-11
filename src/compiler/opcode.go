@@ -42,6 +42,7 @@ const (
 	Jump
 	JumpIfFalsy
 	JumpIfTruthy
+	Loop
 
 	Return
 )

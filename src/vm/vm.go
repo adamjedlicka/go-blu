@@ -234,6 +234,11 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 				vm.ip += int(offset)
 			}
 
+		case compiler.Loop:
+			offset := vm.readShort()
+
+			vm.ip -= int(offset)
+
 		case compiler.Return:
 			return vm.Pop()
 

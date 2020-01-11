@@ -250,3 +250,24 @@ func TestItHasIfStatement(t *testing.T) {
 		t.Error("not 4")
 	}
 }
+
+func TestItHasWhileStatement(t *testing.T) {
+	src := `
+var i = 0
+var j = 0
+
+while i > 0: return -100
+
+while i < 5: i = i + 1
+
+while j < 10 {
+	j = j + 1
+}
+
+return i + j
+`
+
+	if Exec(src).(value.Number) != 15 {
+		t.Error(src, "not 15")
+	}
+}

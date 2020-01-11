@@ -9,6 +9,7 @@ import (
 )
 
 const MaxLocals = 65000
+const MaxLoop = 65000
 
 type Compiler struct {
 	p     *parser.Parser
@@ -169,6 +170,8 @@ func (c *Compiler) statement() {
 		c.endScope()
 	} else if c.match(parser.If) {
 		c.ifStatement()
+	} else if c.match(parser.While) {
+		c.whileStatement()
 	} else if c.match(parser.Return) {
 		c.returnStatement()
 	} else {
@@ -239,6 +242,30 @@ func (c *Compiler) ifStatement() {
 			c.error("Expect 'if' or '{' after 'else'.")
 		}
 	}
+}
+
+func (c *Compiler) whileStatement() {
+	loopStart := c.startLoop()
+
+	c.expression()
+	exitJump := c.emitJump(JumpIfFalsy)
+	c.emitOpCode(Pop) // Condition
+
+	// One-line notation
+	if c.match(parser.Colon) {
+		c.statement()
+	} else {
+		c.consume(parser.LeftBrace, "Expect '{' after while condition.")
+
+		c.beginScope()
+		c.block()
+		c.endScope()
+	}
+
+	c.emitLoop(loopStart)
+
+	c.patchJump(exitJump)
+	c.emitOpCode(Pop) // Condition
 }
 
 func (c *Compiler) returnStatement() {
@@ -448,9 +475,27 @@ func (c *Compiler) emitJump(code OpCode) int {
 
 func (c *Compiler) patchJump(jump int) {
 	length := len(c.chunk.code) - 2 - jump
+	if length > MaxLoop {
+		c.error("Loop body too large.")
+	}
 
 	c.chunk.code[jump] = uint8((length >> 8) & 0xff)
 	c.chunk.code[jump+1] = uint8(length & 0xff)
+}
+
+func (c *Compiler) startLoop() int {
+	return len(c.chunk.code)
+}
+
+func (c *Compiler) emitLoop(loopStart int) {
+	c.emitOpCode(Loop)
+
+	offset := len(c.chunk.code) - loopStart + 2
+	if offset > MaxLoop {
+		c.error("Loop body too large.")
+	}
+
+	c.emitShort(uint16(offset))
 }
 
 func (c *Compiler) makeConstant(value value.Value) uint16 {
