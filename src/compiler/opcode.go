@@ -39,5 +39,9 @@ const (
 	Reminder
 	Subtract
 
+	Jump
+	JumpIfFalsy
+	JumpIfTruthy
+
 	Return
 )

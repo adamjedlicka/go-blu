@@ -167,6 +167,8 @@ func (c *Compiler) statement() {
 		c.beginScope()
 		c.block()
 		c.endScope()
+	} else if c.match(parser.If) {
+		c.ifStatement()
 	} else if c.match(parser.Return) {
 		c.returnStatement()
 	} else {
@@ -198,6 +200,44 @@ func (c *Compiler) endScope() {
 		}
 
 		c.locals = c.locals[:len(c.locals)-1]
+	}
+}
+
+func (c *Compiler) ifStatement() {
+	c.expression()
+	ifJump := c.emitJump(JumpIfFalsy)
+	c.emitOpCode(Pop) // Condition
+
+	// One-line notation
+	if c.match(parser.Colon) {
+		c.statement()
+
+		elseJump := c.emitJump(Jump)
+		c.patchJump(ifJump)
+		c.emitOpCode(Pop) // Condition
+		c.patchJump(elseJump)
+
+		return
+	}
+
+	c.consume(parser.LeftBrace, "Expect '{' after if condition.")
+	c.beginScope()
+	c.block()
+	c.endScope()
+
+	c.patchJump(ifJump)
+	c.emitOpCode(Pop) // Condition
+
+	if c.match(parser.Else) {
+		if c.match(parser.LeftBrace) {
+			c.beginScope()
+			c.block()
+			c.endScope()
+		} else if c.match(parser.If) {
+			c.ifStatement()
+		} else {
+			c.error("Expect 'if' or '{' after 'else'.")
+		}
 	}
 }
 
@@ -397,6 +437,20 @@ func (c *Compiler) emitShort(short uint16) {
 
 func (c *Compiler) emitOpCode(opCode OpCode) {
 	c.chunk.pushCode(uint8(opCode), c.p.Current().Line())
+}
+
+func (c *Compiler) emitJump(code OpCode) int {
+	c.emitOpCode(code)
+	c.emitShort(0)
+
+	return len(c.chunk.code) - 2
+}
+
+func (c *Compiler) patchJump(jump int) {
+	length := len(c.chunk.code) - 2 - jump
+
+	c.chunk.code[jump] = uint8((length >> 8) & 0xff)
+	c.chunk.code[jump+1] = uint8(length & 0xff)
 }
 
 func (c *Compiler) makeConstant(value value.Value) uint16 {

@@ -227,8 +227,26 @@ func TestItHasLocalVariables(t *testing.T) {
 	if Exec("{ var a = 3; return a }").(value.Number) != 3 {
 		t.Error("{ var a = 3; return a } should return 3")
 	}
+
 	if Exec("{ var a = 2; { var a = 3; a = 4 } return a; }").(value.Number) != 2 {
 		t.Error("{ var a = 2; { var a = 3; a = 4 } return a; } should return 2")
 	}
+}
 
+func TestItHasIfStatement(t *testing.T) {
+	if Exec("if true { return 1; } return 2").(value.Number) != 1 {
+		t.Error("not 1")
+	}
+
+	if Exec("if false { return 1; } return 2").(value.Number) != 2 {
+		t.Error("not 2")
+	}
+
+	if Exec("if true: return 3; return 4").(value.Number) != 3 {
+		t.Error("not 3")
+	}
+
+	if Exec("if false: return 3; return 4").(value.Number) != 4 {
+		t.Error("not 4")
+	}
 }

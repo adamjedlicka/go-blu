@@ -215,6 +215,25 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 
 			vm.Push(left - right)
 
+		case compiler.Jump:
+			offset := vm.readShort()
+
+			vm.ip += int(offset)
+
+		case compiler.JumpIfFalsy:
+			offset := vm.readShort()
+
+			if !vm.Peek(0).IsTruthy() {
+				vm.ip += int(offset)
+			}
+
+		case compiler.JumpIfTruthy:
+			offset := vm.readShort()
+
+			if vm.Peek(0).IsTruthy() {
+				vm.ip += int(offset)
+			}
+
 		case compiler.Return:
 			return vm.Pop()
 
