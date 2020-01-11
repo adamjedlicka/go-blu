@@ -149,7 +149,7 @@ func (c *Compiler) defineVariable(index uint16) {
 }
 
 func (c *Compiler) identifierConstant(name parser.Token) uint16 {
-	return c.makeConstant(value.String(name.Lexeme()))
+	return c.makeConstant(value.StringVal(name.Lexeme()))
 }
 
 func (c *Compiler) parseVariable(message string) uint16 {
@@ -381,14 +381,14 @@ func (c *Compiler) number(canAssign bool) {
 		panic(err)
 	}
 
-	c.emitConstant(value.Number(number))
+	c.emitConstant(value.NumberVal(number))
 }
 
 func (c *Compiler) string(canAssign bool) {
 	lexeme := c.p.Previous().Lexeme()
 	string := lexeme[1 : len(lexeme)-1]
 
-	c.emitConstant(value.String(string))
+	c.emitConstant(value.StringVal(string))
 }
 
 func (c *Compiler) literal(canAssign bool) {

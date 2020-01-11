@@ -9,6 +9,7 @@ import (
 	"github.com/adamjedlicka/go-blu/src/vm"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 func main() {
@@ -32,9 +33,14 @@ func runFile(name string) {
 
 	vm := vm.NewVM()
 
+	start := time.Now()
+
 	result := vm.Interpret(c.Compile())
 
+	elapsed := time.Since(start)
+
 	fmt.Println(result)
+	fmt.Printf("took %s\n", elapsed)
 }
 
 func runRepl() {

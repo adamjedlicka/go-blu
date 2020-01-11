@@ -9,10 +9,15 @@ import (
 	"os"
 )
 
+const StackMax = 256
+
 type VM struct {
 	chunk *compiler.Chunk
-	stack *Stack
-	ip    int
+
+	ip int
+
+	stack    [StackMax]value.Value
+	stackLen int
 
 	globals map[value.String]value.Value
 }
@@ -20,7 +25,8 @@ type VM struct {
 func NewVM() VM {
 	return VM{
 		chunk: nil,
-		stack: nil,
+
+		stack: [StackMax]value.Value{},
 		ip:    0,
 
 		globals: make(map[value.String]value.Value),
@@ -38,7 +44,7 @@ func (vm *VM) Exec(source string) value.Value {
 	c := compiler.NewCompiler("script", p)
 	chunk := c.Compile()
 	if chunk == nil {
-		return value.Nil{}
+		return value.NilVal()
 	}
 
 	return vm.Interpret(chunk)
@@ -46,8 +52,9 @@ func (vm *VM) Exec(source string) value.Value {
 
 func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 	vm.chunk = chunk
-	vm.stack = NewStack()
 	vm.ip = 0
+
+	vm.stackLen = 0
 
 	for true {
 		switch compiler.OpCode(vm.readByte()) {
@@ -59,13 +66,13 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			vm.Push(constant)
 
 		case compiler.False:
-			vm.Push(value.Boolean(false))
+			vm.Push(value.FalseVal())
 
 		case compiler.True:
-			vm.Push(value.Boolean(true))
+			vm.Push(value.TrueVal())
 
 		case compiler.Nil:
-			vm.Push(value.Nil{})
+			vm.Push(value.NilVal())
 
 		case compiler.Pop:
 			vm.Pop()
@@ -73,12 +80,12 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 		case compiler.GetLocal:
 			slot := vm.readShort()
 
-			vm.Push(vm.stack.values[slot])
+			vm.Push(vm.stack[slot])
 
 		case compiler.SetLocal:
 			slot := vm.readShort()
 
-			vm.stack.values[slot] = vm.Peek(0)
+			vm.stack[slot] = vm.Peek(0)
 
 		case compiler.DefineGlobal:
 			name := vm.readString()
@@ -92,7 +99,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 				vm.Push(value)
 			} else {
 				vm.runtimeError("Undefined global variable '%s'", name.ToString())
-				return nil
+				return 0
 			}
 
 		case compiler.SetGlobal:
@@ -102,7 +109,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 				vm.globals[name] = vm.Peek(0)
 			} else {
 				vm.runtimeError("Undefined global variable '%s'", name.ToString())
-				return nil
+				return 0
 			}
 
 		case compiler.GetUpvalue:
@@ -127,95 +134,84 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			left := vm.Pop()
 			right := vm.Pop()
 
-			vm.Push(value.Boolean(left == right))
+			vm.Push(value.BooleanVal(left == right))
 
 		case compiler.Greater:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Boolean(left > right))
+			vm.Push(value.BooleanVal(left > right))
 
 		case compiler.GreaterEqual:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Boolean(left >= right))
+			vm.Push(value.BooleanVal(left >= right))
 
 		case compiler.Less:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Boolean(left < right))
+			vm.Push(value.BooleanVal(left < right))
 
 		case compiler.LessEqual:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Boolean(left <= right))
+			vm.Push(value.BooleanVal(left <= right))
 
 		case compiler.NotEqual:
 			right := vm.Pop()
 			left := vm.Pop()
 
-			vm.Push(value.Boolean(left != right))
+			vm.Push(value.BooleanVal(left != right))
 
 		case compiler.Not:
-			vm.Push(!vm.Pop().IsTruthy())
+			vm.Push(value.BooleanVal(!value.IsTruthy(vm.Pop())))
 
 		case compiler.Negate:
-			vm.Push(-vm.Pop().(value.Number))
+			vm.Push(value.NumberVal(-value.AsNumber(vm.Pop())))
 
 		case compiler.Add:
-			rightValue := vm.Pop()
-			leftValue := vm.Pop()
+			right := vm.Pop()
+			left := vm.Pop()
 
-			switch left := leftValue.(type) {
-
-			case value.Number:
-				if right, ok := rightValue.(value.Number); ok {
-					vm.Push(left + right)
-				} else {
-					vm.runtimeError("Both operands must be numbers.")
-					return nil
-				}
-
-			case value.String:
-				vm.Push(left + rightValue.ToString())
-
-			default:
-				vm.runtimeError("Left operand must be Number or String.")
-				return nil
+			if value.IsNumber(left) && value.IsNumber(right) {
+				vm.Push(value.NumberVal(value.AsNumber(left) + value.AsNumber(right)))
+			} else {
+				vm.runtimeError("Both operands must be numbers.")
+				return 0
 			}
 
 		case compiler.Divide:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(left / right)
+			vm.Push(value.NumberVal(left / right))
 
 		case compiler.Exponentiate:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Number(math.Pow(float64(left), float64(right))))
+			vm.Push(value.NumberVal(math.Pow(left, right)))
 
 		case compiler.Multiply:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(left * right)
+			vm.Push(value.NumberVal(left * right))
 
 		case compiler.Reminder:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(value.Number(int(left) % int(right)))
+			vm.Push(value.NumberVal(float64(int(left) % int(right))))
 
 		case compiler.Subtract:
-			right := vm.Pop().(value.Number)
-			left := vm.Pop().(value.Number)
+			right := value.AsNumber(vm.Pop())
+			left := value.AsNumber(vm.Pop())
 
-			vm.Push(left - right)
+			vm.Push(value.NumberVal(left - right))
 
 		case compiler.Jump:
 			offset := vm.readShort()
@@ -225,14 +221,14 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 		case compiler.JumpIfFalsy:
 			offset := vm.readShort()
 
-			if !vm.Peek(0).IsTruthy() {
+			if !value.IsTruthy(vm.Peek(0)) {
 				vm.ip += int(offset)
 			}
 
 		case compiler.JumpIfTruthy:
 			offset := vm.readShort()
 
-			if vm.Peek(0).IsTruthy() {
+			if value.IsTruthy(vm.Peek(0)) {
 				vm.ip += int(offset)
 			}
 
@@ -249,19 +245,23 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 		}
 	}
 
-	return nil
+	return 0
 }
 
 func (vm *VM) Push(val value.Value) {
-	vm.stack.Push(val)
+	vm.stack[vm.stackLen] = val
+
+	vm.stackLen++
 }
 
 func (vm *VM) Pop() value.Value {
-	return vm.stack.Pop()
+	vm.stackLen--
+
+	return vm.stack[vm.stackLen]
 }
 
 func (vm *VM) Peek(distance int) value.Value {
-	return vm.stack.Peek(distance)
+	return vm.stack[vm.stackLen-1-distance]
 }
 
 func (vm *VM) readByte() uint8 {
@@ -284,7 +284,7 @@ func (vm *VM) readConstant() value.Value {
 }
 
 func (vm *VM) readString() value.String {
-	return vm.readConstant().(value.String)
+	return value.AsObject(vm.readConstant()).(value.String)
 }
 
 func (vm *VM) runtimeError(message string, a ...interface{}) {
