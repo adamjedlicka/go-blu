@@ -197,6 +197,24 @@ func TestItHasComparisonOperators(t *testing.T) {
 	}
 }
 
+func TestItHasGrouping(t *testing.T) {
+	if Exec("(1 + 2) * 3").(value.Number) != 9 {
+		t.Error("(1 + 2) * 3 != 9")
+	}
+
+	if Exec("1 + (2 * 3)").(value.Number) != 7 {
+		t.Error("1 + (2 * 3) != 7")
+	}
+
+	if Exec("(1 + 2 * 3)").(value.Number) != 7 {
+		t.Error("(1 + 2 * 3) != 7")
+	}
+
+	if Exec("1 + 2 * 3").(value.Number) != 7 {
+		t.Error("1 + 2 * 3 != 7")
+	}
+}
+
 func TestItHasGlobalVariables(t *testing.T) {
 	res := Exec("var a = 3; a = a * a; a")
 

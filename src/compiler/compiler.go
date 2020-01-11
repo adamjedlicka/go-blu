@@ -210,7 +210,7 @@ func (c *Compiler) parsePrecedence(precedence Precedence) {
 	canAssign := precedence <= PrecedenceAssignment
 	prefixRule(c, canAssign)
 
-	for precedence < parseRules[c.p.Current().Type()].precedence {
+	for precedence <= parseRules[c.p.Current().Type()].precedence {
 		c.advance()
 
 		infixRule := parseRules[c.p.Previous().Type()].infix
@@ -304,6 +304,11 @@ func (c *Compiler) literal(canAssign bool) {
 	default:
 		panic("unreachable")
 	}
+}
+
+func (c *Compiler) grouping(canAssign bool) {
+	c.expression()
+	c.consume(parser.RightParen, "Expect ')' after expression")
 }
 
 func (c *Compiler) resolveLocal(name parser.Token) (uint16, bool) {

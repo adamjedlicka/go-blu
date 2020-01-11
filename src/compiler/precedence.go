@@ -40,7 +40,7 @@ func init() {
 		{nil, nil, PrecedenceNone},                              // Dot
 		{nil, nil, PrecedenceNone},                              // LeftBrace
 		{nil, nil, PrecedenceNone},                              // LeftBracket
-		{nil, nil, PrecedenceNone},                              // LeftParent
+		{(*Compiler).grouping, nil, PrecedenceCall},             // LeftParen
 		{(*Compiler).unary, (*Compiler).binary, PrecedenceTerm}, // Minus
 		{nil, (*Compiler).binary, PrecedenceFactor},             // Percent
 		{nil, (*Compiler).binary, PrecedenceTerm},               // Plus
@@ -92,4 +92,8 @@ func init() {
 	if len(parseRules)-1 != int(parser.Error) {
 		panic("ParseRules table corrupt.")
 	}
+}
+
+func (c *Compiler) getParseRule(tokenType parser.TokenType) ParseRule {
+	return parseRules[tokenType]
 }
