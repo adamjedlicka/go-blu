@@ -69,10 +69,14 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 			vm.Pop()
 
 		case compiler.GetLocal:
-			panic("unimplemented")
+			slot := vm.readShort()
+
+			vm.Push(vm.stack.values[slot])
 
 		case compiler.SetLocal:
-			panic("unimplemented")
+			slot := vm.readShort()
+
+			vm.stack.values[slot] = vm.Peek(0)
 
 		case compiler.DefineGlobal:
 			name := vm.readString()

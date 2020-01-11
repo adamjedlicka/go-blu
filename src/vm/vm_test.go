@@ -222,3 +222,13 @@ func TestItHasGlobalVariables(t *testing.T) {
 		t.Error(res)
 	}
 }
+
+func TestItHasLocalVariables(t *testing.T) {
+	if Exec("{ var a = 3; return a }").(value.Number) != 3 {
+		t.Error("{ var a = 3; return a } should return 3")
+	}
+	if Exec("{ var a = 2; { var a = 3; a = 4 } return a; }").(value.Number) != 2 {
+		t.Error("{ var a = 2; { var a = 3; a = 4 } return a; } should return 2")
+	}
+
+}

@@ -163,15 +163,42 @@ func (c *Compiler) parseVariable(message string) uint16 {
 }
 
 func (c *Compiler) statement() {
-	if c.match(parser.Return) {
+	if c.match(parser.LeftBrace) {
+		c.beginScope()
+		c.block()
+		c.endScope()
+	} else if c.match(parser.Return) {
 		c.returnStatement()
 	} else {
 		c.expressionStatement()
 	}
 }
 
-func (c *Compiler) expression() {
-	c.parsePrecedence(PrecedenceAssignment)
+func (c *Compiler) block() {
+	for !c.check(parser.RightBrace) && !c.check(parser.Eof) {
+		c.declaration()
+	}
+
+	c.consume(parser.RightBrace, "Expect '}' after block.")
+}
+
+func (c *Compiler) beginScope() {
+	c.scopeDepth++
+}
+
+func (c *Compiler) endScope() {
+	c.scopeDepth--
+
+	for len(c.locals) > 0 && c.locals[len(c.locals)-1].depth > c.scopeDepth {
+		if c.locals[len(c.locals)-1].isUpvalue {
+			// TODO : Implement closing of upvalues
+			panic("unimplemented")
+		} else {
+			c.emitOpCode(Pop)
+		}
+
+		c.locals = c.locals[:len(c.locals)-1]
+	}
 }
 
 func (c *Compiler) returnStatement() {
@@ -195,6 +222,10 @@ func (c *Compiler) expressionStatement() {
 	c.emitOpCode(Pop)
 
 	c.expectNewlineOrSemicolon()
+}
+
+func (c *Compiler) expression() {
+	c.parsePrecedence(PrecedenceAssignment)
 }
 
 func (c *Compiler) parsePrecedence(precedence Precedence) {
