@@ -1,15 +1,12 @@
 package value
 
-type Nil struct{}
-
-func (n Nil) IsTruthy() Boolean {
-	return false
+func NilVal() Value {
+	return Value{
+		value:  tagNil,
+		object: nil,
+	}
 }
 
-func (n Nil) ToString() String {
-	return "nil"
-}
-
-func (n Nil) String() string {
-	return "nil"
+func IsNil(value Value) bool {
+	return value.value == tagNil
 }

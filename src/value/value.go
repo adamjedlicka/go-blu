@@ -1,75 +1,22 @@
 package value
 
-import "unsafe"
+import "strconv"
 
-type Value uintptr
+type Value struct {
+	value  uintptr
+	object Object
+}
 
 // A mask that selects the sign bit.
-const signBit = Value(1 << 63)
+const signBit = 1 << 63
 
 // The bits that must be set to indicate a quiet NaN.
-const qNaN = Value(0x7ffc000000000000)
+const qNaN = 0x7ffc000000000000
 
 // Tag values for the different singleton values.
-const tagNil = 1   // 01
-const tagFalse = 2 // 10
-const tagTrue = 3  // 11
-
-func NilVal() Value {
-	return qNaN | tagNil
-}
-
-func FalseVal() Value {
-	return qNaN | tagFalse
-}
-
-func TrueVal() Value {
-	return qNaN | tagTrue
-}
-
-func BooleanVal(boolean bool) Value {
-	if boolean {
-		return TrueVal()
-	} else {
-		return FalseVal()
-	}
-}
-
-func NumberVal(number float64) Value {
-	return Value(number)
-}
-
-func ObjectVal(object Object) Value {
-	return signBit | qNaN | Value(unsafe.Pointer(&object))
-}
-
-func IsNil(value Value) bool {
-	return value == NilVal()
-}
-
-func IsBool(value Value) bool {
-	return (value & FalseVal()) == FalseVal()
-}
-
-func IsNumber(value Value) bool {
-	return (value & qNaN) != qNaN
-}
-
-func IsObject(value Value) bool {
-	return (value & (qNaN | signBit)) == (qNaN | signBit)
-}
-
-func AsBoolean(value Value) bool {
-	return value == TrueVal()
-}
-
-func AsNumber(value Value) float64 {
-	return float64(value)
-}
-
-func AsObject(value Value) Object {
-	return *(*Object)(unsafe.Pointer(value))
-}
+const tagNil = qNaN | 1
+const tagFalse = qNaN | 2
+const tagTrue = qNaN | 3
 
 func IsTruthy(value Value) bool {
 	if IsNil(value) || AsBoolean(value) == false {
@@ -77,4 +24,20 @@ func IsTruthy(value Value) bool {
 	}
 
 	return true
+}
+
+func (v Value) String() string {
+	if IsNil(v) {
+		return "nil"
+	} else if IsBoolean(v) {
+		if AsBoolean(v) {
+			return "true"
+		} else {
+			return "false"
+		}
+	} else if IsNumber(v) {
+		return strconv.FormatFloat(float64(v.value), 'f', -1, 64)
+	} else {
+		return v.object.ToString()
+	}
 }

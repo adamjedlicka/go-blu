@@ -95,11 +95,11 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 		case compiler.GetGlobal:
 			name := vm.readString()
 
-			if value, ok := vm.globals[name]; ok {
-				vm.Push(value)
+			if val, ok := vm.globals[name]; ok {
+				vm.Push(val)
 			} else {
 				vm.runtimeError("Undefined global variable '%s'", name.ToString())
-				return 0
+				return value.NilVal()
 			}
 
 		case compiler.SetGlobal:
@@ -109,7 +109,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 				vm.globals[name] = vm.Peek(0)
 			} else {
 				vm.runtimeError("Undefined global variable '%s'", name.ToString())
-				return 0
+				return value.NilVal()
 			}
 
 		case compiler.GetUpvalue:
@@ -178,9 +178,14 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 
 			if value.IsNumber(left) && value.IsNumber(right) {
 				vm.Push(value.NumberVal(value.AsNumber(left) + value.AsNumber(right)))
+			} else if value.IsObject(left) && value.IsObject(right) {
+				left := value.AsObject(left).(value.String)
+				right := value.AsObject(right).(value.String)
+
+				vm.Push(value.StringVal(string(left + right)))
 			} else {
 				vm.runtimeError("Both operands must be numbers.")
-				return 0
+				return value.NilVal()
 			}
 
 		case compiler.Divide:
@@ -245,7 +250,7 @@ func (vm *VM) Interpret(chunk *compiler.Chunk) value.Value {
 		}
 	}
 
-	return 0
+	return value.NilVal()
 }
 
 func (vm *VM) Push(val value.Value) {

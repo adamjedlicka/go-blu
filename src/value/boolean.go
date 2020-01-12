@@ -1,15 +1,31 @@
 package value
 
-type Boolean bool
-
-func (b Boolean) IsTruthy() Boolean {
-	return b != false
+func BooleanVal(boolean bool) Value {
+	if boolean {
+		return TrueVal()
+	} else {
+		return FalseVal()
+	}
 }
 
-func (b Boolean) ToString() String {
-	if b {
-		return "true"
+func FalseVal() Value {
+	return Value{
+		value:  tagFalse,
+		object: nil,
 	}
+}
 
-	return "false"
+func TrueVal() Value {
+	return Value{
+		value:  tagTrue,
+		object: nil,
+	}
+}
+
+func IsBoolean(value Value) bool {
+	return value.value&tagFalse == tagFalse
+}
+
+func AsBoolean(value Value) bool {
+	return value.value == tagTrue
 }

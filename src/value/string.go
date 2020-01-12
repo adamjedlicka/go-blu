@@ -2,18 +2,14 @@ package value
 
 type String string
 
-func (s String) IsTruthy() Boolean {
-	return s != ""
-}
-
 func StringVal(str string) Value {
 	return ObjectVal(String(str))
 }
 
-func (s String) ToString() String {
-	return s
+func (s String) IsTruthy() bool {
+	return s != ""
 }
 
-func (s String) String() string {
+func (s String) ToString() string {
 	return string(s)
 }

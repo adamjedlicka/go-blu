@@ -1,19 +1,16 @@
 package value
 
-import (
-	"strconv"
-)
-
-type Number float64
-
-func (n Number) IsTruthy() Boolean {
-	return n != 0
+func NumberVal(number float64) Value {
+	return Value{
+		value:  uintptr(number),
+		object: nil,
+	}
 }
 
-func (n Number) ToString() String {
-	return String(strconv.FormatFloat(float64(n), 'f', -1, 64))
+func IsNumber(value Value) bool {
+	return value.value&qNaN != qNaN
 }
 
-func (n Number) String() string {
-	return strconv.FormatFloat(float64(n), 'f', -1, 64)
+func AsNumber(value Value) float64 {
+	return float64(value.value)
 }
